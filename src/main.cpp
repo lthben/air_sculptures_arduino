@@ -1,27 +1,40 @@
 /*
   Author: Benjamin Low (Lthben@gmail.com)
-  Date: Oct 2019
-  Description: 
-      This version uses the Arduino Mega 2560. No audio functionality.
-      Sculpture 1, 2 and 3 have two buttons and one distance sensor each.
+  Date: Nov 2019
+  Description: Air sculptures 1 and 2 - CO2 and PM25
+
+      This version uses the Arduino Mega 2560. No audio functionality. This is for sculpture 1 and 2 since the 3.3V teensy is unable to drive a long 24V led strip, and a 5V microcontroller and signal is needed for the data line.
+
+      Each sculpture has two buttons and one distance sensor each.
       The two buttons play back the two sets of air measurements readings translated into brightness values. 
       One button represents one set of reading and one strip of led.
       There is an idle mode pulsing light animation. Active mode is triggered by button and will show a sequence of brightness values. 
       The distance sensor changes the hue of the leds in real time. 
-      There is a sound for idle mode and one for active playback mode. 
+      There is a sound for idle mode and one for active playback mode. Sound disabled for the Arduino since it does not have an audio shield.
 */
 
 #include <Arduino.h>
-#include <Adafruit_VL53L0X.h>
-#include <Bounce.h>
+#include <Bounce2.h>
 #include <FastLED.h>
+#include <elapsedMillis.h>
+#include <Adafruit_VL53L0X.h>
 
 //-------------------- USER DEFINED SETTINGS --------------------//
 
 //Uncomment one below
-#define __CO2__
-// #define __PM25__ 
+// #define __CO2__
+#define __PM25__ 
 // #define __VOC__
+
+//PINOUTS for LED strips
+const int CO2STRIP1_1PIN = 7, CO2STRIP1_2PIN = 6, CO2STRIP1_3PIN = 5, CO2STRIP2PIN = 4;//for CO2
+const int STRIP1PIN = 5, STRIP2PIN = 4;//for PM25 and VOC
+
+//PINOUTS for buttons
+const int button0pin = 14, button1pin = 15;
+
+//PINOUTS for dist sensor
+//SCL to 21 and SDA to 20
 
 const int CO2band1_1 = 25, CO2band1_2 = 25, CO2band1_3 = 25, CO2band2 = 55, PM25band1 = 55, PM25band2 = 55, VOCband1 = 50, VOCband2 = 50; //num of pixels per strip. Each pixel is 10cm.
 
@@ -38,7 +51,6 @@ CHSV cblue(140,255,255);
 const int BAND_DELAY = 500;   //controls led animation speed
 
 //-------------------- Buttons and distance sensor --------------------//
-const int button0pin = 14, button1pin = 15;
 Bounce button0 = Bounce(button0pin, 15); // 15 = 15 ms debounce time
 Bounce button1 = Bounce(button1pin, 15);
 
@@ -51,37 +63,26 @@ bool isUserPresent = false;
 
 //-------------------- Light --------------------//
 
-#define LED_TYPE UCS1903
+#define LED_TYPE WS2812
 #define COLOR_ORDER GRB
 
 CHSV strip1Color = cblue;
 CHSV strip2Color = cblue;
 
 #if defined(__CO2__)
-const int BAND1_1 = CO2band1_1, BAND1_2 = CO2band1_2, BAND1_3 = CO2band1_3, BAND2 = CO2band2;
 const int SCULPTURE_ID = 1;
 int readings1[17], readings2[40];
-const int STRIP1_1PIN = 4;
-const int STRIP1_2PIN = 5;
-const int STRIP1_3PIN = 6;
-const int STRIP2PIN = 7;
-CRGB leds0[BAND1_1]; CRGB leds1[BAND1_2]; CRGB leds2[BAND1_3]; CRGB leds3[BAND2];
+CRGB leds0[CO2band1_1]; CRGB leds1[CO2band1_2]; CRGB leds2[CO2band1_3]; CRGB leds3[CO2band2];
 
 #elif defined(__PM25__)
-const int BAND1 = PM25band1, BAND2 = PM25band2; 
 const int SCULPTURE_ID = 2;
 int readings1[20], readings2[32];
-const int STRIP1PIN = 4;
-const int STRIP2PIN = 5;
-CRGB leds0[BAND1]; CRGB leds1[BAND2];
+CRGB leds0[PM25band1]; CRGB leds1[PM25band2]; CRGB leds2[0]; CRGB leds3[0];
 
 #elif defined(__VOC__)
-const int BAND1 = VOCband1, BAND2 = VOCband2;
 const int SCULPTURE_ID = 3;
 int readings1[26], readings2[22];
-const int STRIP1PIN = 4;
-const int STRIP2PIN = 5;
-CRGB leds0[BAND1]; CRGB leds1[BAND2];
+CRGB leds0[VOCband1]; CRGB leds1[VOCband2]; CRGB leds2[0]; CRGB leds3[0];
 
 #else
 #error "invalid sculpture ID"
@@ -122,15 +123,20 @@ void setup() {
 
   if (SCULPTURE_ID == 1) //top ring of CO2 sculpture split into 3 strips
   {
-    FastLED.addLeds<LED_TYPE, STRIP1_1PIN, COLOR_ORDER>(leds0, BAND1_1);
-    FastLED.addLeds<LED_TYPE, STRIP1_2PIN, COLOR_ORDER>(leds1, BAND1_2);
-    FastLED.addLeds<LED_TYPE, STRIP1_3PIN, COLOR_ORDER>(leds2, BAND1_3);
-    FastLED.addLeds<LED_TYPE, STRIP2PIN, COLOR_ORDER>(leds3, BAND2);
+    FastLED.addLeds<LED_TYPE, CO2STRIP1_1PIN, COLOR_ORDER>(leds0, CO2band1_1);
+    FastLED.addLeds<LED_TYPE, CO2STRIP1_2PIN, COLOR_ORDER>(leds1, CO2band1_2);
+    FastLED.addLeds<LED_TYPE, CO2STRIP1_3PIN, COLOR_ORDER>(leds2, CO2band1_3);
+    FastLED.addLeds<LED_TYPE, CO2STRIP2PIN, COLOR_ORDER>(leds3, CO2band2);
   } 
-  else
+  else if (SCULPTURE_ID == 2)
   {
-    FastLED.addLeds<LED_TYPE, STRIP1PIN, COLOR_ORDER>(leds0, BAND1);
-    FastLED.addLeds<LED_TYPE, STRIP2PIN, COLOR_ORDER>(leds1, BAND2); 
+    FastLED.addLeds<LED_TYPE, STRIP1PIN, COLOR_ORDER>(leds0, PM25band1);
+    FastLED.addLeds<LED_TYPE, STRIP2PIN, COLOR_ORDER>(leds1, PM25band2); 
+  }
+  else if (SCULPTURE_ID == 3)
+  {
+    FastLED.addLeds<LED_TYPE, STRIP1PIN, COLOR_ORDER>(leds0, VOCband1);
+    FastLED.addLeds<LED_TYPE, STRIP2PIN, COLOR_ORDER>(leds1, VOCband2); 
   }
   FastLED.setBrightness(255);
 
@@ -163,6 +169,8 @@ void loop() {
   {
     strip2_playback_readings(); //play brightness sequence according to readings[] array
   }
+
+  add_glitter();
 
   FastLED.show();
   FastLED.delay(1000 / UPDATES_PER_SECOND);

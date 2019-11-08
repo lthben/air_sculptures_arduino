@@ -138,17 +138,59 @@ void set_playMode()
 --------------------------------------------------------------------------------*/
 void strip1_fade()
 {
-    for (int i = 0; i < BAND1; i++)
+    if (SCULPTURE_ID == 1)
     {
-        leds0[i].fadeToBlackBy(8);
+        for (int i = 0; i < CO2band1_1; i++)
+        {
+            leds0[i].fadeToBlackBy(8);
+        }
+        for (int i = 0; i < CO2band1_2; i++)
+        {
+            leds1[i].fadeToBlackBy(8);
+        }
+        for (int i = 0; i < CO2band1_3; i++)
+        {
+            leds2[i].fadeToBlackBy(8);
+        }
+    }
+    else if (SCULPTURE_ID == 2)
+    {
+        for (int i = 0; i < PM25band1; i++)
+        {
+            leds0[i].fadeToBlackBy(8);
+        }
+    }
+    else if (SCULPTURE_ID == 3)
+    {
+        for (int i = 0; i < VOCband1; i++)
+        {
+            leds0[i].fadeToBlackBy(8);
+        }
     }
 }
 
 void strip2_fade()
 {
-    for (int i = 0; i < BAND2; i++)
+    if (SCULPTURE_ID == 1)
     {
-        leds1[i].fadeToBlackBy(8);
+        for (int i = 0; i < CO2band2; i++)
+        {
+            leds3[i].fadeToBlackBy(8);
+        }
+    }
+    else if (SCULPTURE_ID == 2)
+    {
+        for (int i = 0; i < PM25band2; i++)
+        {
+            leds1[i].fadeToBlackBy(8);
+        }
+    }
+    else if (SCULPTURE_ID == 3)
+    {
+        for (int i = 0; i < VOCband2; i++)
+        {
+            leds1[i].fadeToBlackBy(8);
+        }
     }
 }
 
@@ -156,9 +198,34 @@ void strip1_set_brightLevel(int brightlvl)
 {
     strip1Color.val = brightlvl;
 
-    for (int i = 0; i < BAND1; i++)
+    if (SCULPTURE_ID == 1)
     {
-        leds0[i] = strip1Color;
+        for (int i = 0; i < CO2band1_1; i++)
+        {
+            leds0[i] = strip1Color;
+        }
+        for (int i = 0; i < CO2band1_2; i++)
+        {
+            leds1[i] = strip1Color;
+        }
+        for (int i = 0; i < CO2band1_3; i++)
+        {
+            leds2[i] = strip1Color;
+        }
+    }
+    else if (SCULPTURE_ID == 2)
+    {
+        for (int i = 0; i < PM25band1; i++)
+        {
+            leds0[i] = strip1Color;
+        }
+    }
+    else if (SCULPTURE_ID == 3)
+    {
+        for (int i = 0; i < VOCband1; i++)
+        {
+            leds0[i] = strip1Color;
+        }
     }
 }
 
@@ -166,15 +233,32 @@ void strip2_set_brightLevel(int brightlvl)
 {
     strip2Color.val = brightlvl;
 
-    for (int i = 0; i < BAND2; i++)
+    if (SCULPTURE_ID == 1)
     {
-        leds1[i] = strip2Color;
+        for (int i = 0; i < CO2band2; i++)
+        {
+            leds3[i] = strip2Color;
+        }
+    }
+    else if (SCULPTURE_ID == 2)
+    {
+        for (int i = 0; i < PM25band2; i++)
+        {
+            leds1[i] = strip2Color;
+        }
+    }
+    else if (SCULPTURE_ID == 3)
+    {
+        for (int i = 0; i < VOCband2; i++)
+        {
+            leds1[i] = strip2Color;
+        }
     }
 }
 
 bool strip1_has_fade()
 {
-    if (leds0[0].getAverageLight() == 0 && leds0[BAND1 - 1].getAverageLight() == 0)
+    if (leds0[0].getAverageLight() == 0)
     {
         return true;
     }
@@ -186,13 +270,27 @@ bool strip1_has_fade()
 
 bool strip2_has_fade()
 {
-    if (leds1[0].getAverageLight() == 0 && leds1[BAND2 - 1].getAverageLight() == 0)
+    if (SCULPTURE_ID == 1)
     {
-        return true;
+        if (leds3[0].getAverageLight() == 0)
+            {
+                return true;
+            }
+        else
+        {
+            return false;
+        }
     }
     else
     {
-        return false;
+        if (leds1[0].getAverageLight() == 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }
 
@@ -245,22 +343,29 @@ void strip1_idle_animation()
 
     if (SCULPTURE_ID == 1)
     {
-        for (int i = 0; i < BAND1_1)
+        for (int i = 0; i < CO2band1_1; i++)
         {
             leds0[i] = strip1Color;
         }
-        for (int i = 0; i < BAND1_2)
+        for (int i = 0; i < CO2band1_2; i++)
         {
             leds1[i] = strip1Color;
         }
-        for (int i = 0; i < BAND1_3)
+        for (int i = 0; i < CO2band1_3; i++)
         {
             leds2[i] = strip1Color;
         }
     }
-    else
+    else if (SCULPTURE_ID == 2)
     {
-        for (int i = 0; i < BAND1; i++)
+        for (int i = 0; i < PM25band1; i++)
+        {
+            leds0[i] = strip1Color;
+        }
+    }
+    else if (SCULPTURE_ID == 3)
+    {
+        for (int i = 0; i < VOCband1; i++)
         {
             leds0[i] = strip1Color;
         }
@@ -282,14 +387,21 @@ void strip2_idle_animation()
 
     if (SCULPTURE_ID == 1)
     {
-        for (int i = 0; i < BAND2; i++)
+        for (int i = 0; i < CO2band2; i++)
         {
-            leds3[i] = strip1Color;
+            leds3[i] = strip2Color;
         }
     }
-    else
+    else if (SCULPTURE_ID == 2)
     {
-        for (int i = 0; i < BAND2; i++)
+        for (int i = 0; i < PM25band2; i++)
+        {
+            leds1[i] = strip2Color;
+        }
+    }
+    else if (SCULPTURE_ID == 3)
+    {
+        for (int i = 0; i < VOCband2; i++)
         {
             leds1[i] = strip2Color;
         }
@@ -474,4 +586,30 @@ void strip2_playback_readings()
             strip2_go_idle();
         }
     }
+}
+
+/*--------------------------------------------------------------------------------
+  add glitter
+--------------------------------------------------------------------------------*/
+void add_glitter()
+{
+    if (SCULPTURE_ID == 1)
+    {
+        if (random8() < 20) //random8() returns a rand num from 0 - 255 
+        {
+            leds0[ random16(CO2band1_1)] += CRGB::White;
+            leds1[ random16(CO2band1_2)] += CRGB::White;
+            leds2[ random16(CO2band1_3)] += CRGB::White;
+            leds3[ random16(CO2band2)] += CRGB::White;
+        }
+    }
+    else if (SCULPTURE_ID == 2)
+    {
+        if (random8() < 50) //random8() returns a rand num from 0 - 255 
+        {
+            leds0[ random16(PM25band1)] += CRGB::White;
+            leds1[ random16(PM25band2)] += CRGB::White;
+        }
+    }
+    //SCULPTURE 3 is on the Teensy. Chance of glitter is 80 out of a 0 - 255 range.
 }
