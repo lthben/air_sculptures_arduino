@@ -22,8 +22,8 @@
 //-------------------- USER DEFINED SETTINGS --------------------//
 
 //Uncomment one below
-// #define __CO2__
-#define __PM25__ 
+#define __CO2__
+// #define __PM25__ 
 // #define __VOC__
 
 //PINOUTS for LED strips

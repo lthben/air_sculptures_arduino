@@ -3,18 +3,25 @@
 --------------------------------------------------------------------------------*/
 void read_console()
 {
-    button0.update();
-    button1.update();
+    if (strip1playMode == IDLE_MODE)
+    {
+        button0.update(); //let animation finish before listening again, cos kids mashing buttons.
 
-    if (button0.fallingEdge())
-    {
-        isButton0Pressed = true;
-        Serial.println("button0 pressed");
+        if (button0.fallingEdge())
+        {
+            isButton0Pressed = true;
+            Serial.println("button0 pressed");
+        }
     }
-    if (button1.fallingEdge())
+    if (strip2playMode == IDLE_MODE)
     {
-        isButton1Pressed = true;
-        Serial.println("button1 pressed");
+        button1.update();
+
+        if (button1.fallingEdge())
+        {
+            isButton1Pressed = true;
+            Serial.println("button1 pressed");
+        }
     }
 
     if (loxmsec > 100)
@@ -273,9 +280,9 @@ bool strip2_has_fade()
     if (SCULPTURE_ID == 1)
     {
         if (leds3[0].getAverageLight() == 0)
-            {
-                return true;
-            }
+        {
+            return true;
+        }
         else
         {
             return false;
@@ -595,21 +602,33 @@ void add_glitter()
 {
     if (SCULPTURE_ID == 1)
     {
-        if (random8() < 20) //random8() returns a rand num from 0 - 255 
+        if (random8() < 15) //random8() returns a rand num from 0 - 255
         {
-            leds0[ random16(CO2band1_1)] += CRGB::White;
-            leds1[ random16(CO2band1_2)] += CRGB::White;
-            leds2[ random16(CO2band1_3)] += CRGB::White;
-            leds3[ random16(CO2band2)] += CRGB::White;
+            if (strip1playMode == IDLE_MODE) //only glitter in idle mode
+            {
+                leds0[random16(CO2band1_1)] += CRGB::White;
+                leds1[random16(CO2band1_2)] += CRGB::White;
+                leds2[random16(CO2band1_3)] += CRGB::White;
+            }
+            if (strip2playMode == IDLE_MODE)
+            {
+                leds3[random16(CO2band2)] += CRGB::White;
+            }
         }
     }
     else if (SCULPTURE_ID == 2)
     {
-        if (random8() < 50) //random8() returns a rand num from 0 - 255 
+        if (random8() < 35) //random8() returns a rand num from 0 - 255
         {
-            leds0[ random16(PM25band1)] += CRGB::White;
-            leds1[ random16(PM25band2)] += CRGB::White;
+            if (strip1playMode == IDLE_MODE) //only glitter in idle mode
+            {
+                leds0[random16(PM25band1)] += CRGB::White;
+            }
+            if (strip2playMode == IDLE_MODE)
+            {
+                leds1[random16(PM25band2)] += CRGB::White;
+            }
         }
     }
-    //SCULPTURE 3 is on the Teensy. Chance of glitter is 80 out of a 0 - 255 range.
+    //SCULPTURE 3 is on the Teensy. Chance of glitter is 55 out of a 0 - 255 range.
 }
