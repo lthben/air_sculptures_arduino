@@ -67,8 +67,22 @@ void do_colour_variation()
     }
     else
     {
-        strip1Color.hue = cblue.hue;
-        strip2Color.hue = cblue.hue;
+        if (strip1playMode == IDLE_MODE)
+        {
+            strip1Color.hue = idleColor.hue;
+        } 
+        else if (strip1playMode == BUTTON_MODE)
+        {
+            strip1Color.hue = activeColor.hue;
+        }
+        if (strip2playMode == IDLE_MODE)
+        {
+            strip2Color.hue = idleColor.hue;
+        } 
+        else if (strip2playMode == BUTTON_MODE)
+        {
+            strip2Color.hue = activeColor.hue;
+        }    
     }
 }
 
@@ -81,33 +95,33 @@ void register_readings()
     {
         for (int i = 0; i < 17; i++)
         {
-            readings1[i] = int(map(CO2_1[i], 0, 1800, 0, 255));
+            readings1[i] = int(map(CO2_1[i], 0, 1800, 64, 255));
         }
         for (int i = 0; i < 40; i++)
         {
-            readings2[i] = int(map(CO2_2[i], 0, 1800, 0, 255));
+            readings2[i] = int(map(CO2_2[i], 0, 1800, 64, 255));
         }
     }
     else if (SCULPTURE_ID == 2)
     {
         for (int i = 0; i < 20; i++)
         {
-            readings1[i] = int(map(PM25_1[i], 0, 125, 0, 255));
+            readings1[i] = int(map(PM25_1[i], 0, 125, 64, 255));
         }
         for (int i = 0; i < 32; i++)
         {
-            readings2[i] = int(map(PM25_2[i], 0, 125, 0, 255));
+            readings2[i] = int(map(PM25_2[i], 0, 125, 64, 255));
         }
     }
     else //sculpture 3
     {
         for (int i = 0; i < 26; i++)
         {
-            readings1[i] = int(map(VOC_1[i], 0, 130, 0, 255));
+            readings1[i] = int(map(VOC_1[i], 0, 130, 80, 255));
         }
         for (int i = 0; i < 22; i++)
         {
-            readings2[i] = int(map(VOC_2[i], 0, 130, 0, 255));
+            readings2[i] = int(map(VOC_2[i], 0, 130, 80, 255));
         }
     }
 }
@@ -126,6 +140,7 @@ void set_playMode()
 
         strip1activeLedState = 0;         //reset the led if currently active
         strip1bandDelay = BAND_DELAY / 4; //speed up the fade animation
+        strip1Color = activeColor;
     }
 
     if (isButton1Pressed == true) //process button press
@@ -137,6 +152,7 @@ void set_playMode()
 
         strip2activeLedState = 0;         //reset the led if currently active
         strip2bandDelay = BAND_DELAY / 4; //speed up the fade animation
+        strip2Color = activeColor;
     }
 }
 
@@ -437,6 +453,7 @@ void strip1_go_idle()
     strip1isMaxBrightness = false;
     strip1brightness = 0;
     strip1bandms = 0;
+    strip1Color = idleColor;
     // sgtl5000_1.volume(0.5); //uncomment when audio added
 }
 
@@ -451,6 +468,7 @@ void strip2_go_idle()
     strip2isMaxBrightness = false;
     strip2brightness = 0;
     strip2bandms = 0;
+    strip2Color = idleColor;
     // sgtl5000_1.volume(0.5); //uncomment when audio added
 }
 
@@ -630,5 +648,18 @@ void add_glitter()
             }
         }
     }
-    //SCULPTURE 3 is on the Teensy. Chance of glitter is 55 out of a 0 - 255 range.
+    else if (SCULPTURE_ID == 3)
+    {
+        if (random8() < 55) //random8() returns a rand num from 0 - 255
+        {
+            if (strip1playMode == IDLE_MODE) //only glitter in idle mode
+            {
+                leds0[random16(VOCband1)] += CRGB::White;
+            }
+            if (strip2playMode == IDLE_MODE)
+            {
+                leds1[random16(VOCband2)] += CRGB::White;
+            }
+        }
+    }
 }

@@ -1,16 +1,17 @@
 /*
   Author: Benjamin Low (Lthben@gmail.com)
   Date: Nov 2019
-  Description: Air sculptures 1 and 2 - CO2 and PM25
+  Description: Air sculptures 1, 2 and 3 - CO2, PM25 and VOC
 
-      This version uses the Arduino Mega 2560. No audio functionality. This is for sculpture 1 and 2 since the 3.3V teensy is unable to drive a long 24V led strip, and a 5V microcontroller and signal is needed for the data line.
+      This version uses the Arduino Mega 2560. No audio functionality (yet). A 3.3V teensy is unable to drive a long 24V led strip, and thus a 5V microcontroller and signal is needed for the data line.
 
       Each sculpture has two buttons and one distance sensor each.
       The two buttons play back the two sets of air measurements readings translated into brightness values. 
       One button represents one set of reading and one strip of led.
       There is an idle mode pulsing light animation. Active mode is triggered by button and will show a sequence of brightness values. 
       The distance sensor changes the hue of the leds in real time. 
-      There is a sound for idle mode and one for active playback mode. Sound disabled for the Arduino since it does not have an audio shield.
+      There is a sound for idle mode and one for active playback mode. 
+      Sound disabled for the Arduino since it does not have an audio shield (yet).
 */
 
 #include <Arduino.h>
@@ -22,9 +23,9 @@
 //-------------------- USER DEFINED SETTINGS --------------------//
 
 //Uncomment one below
-#define __CO2__
+// #define __CO2__
 // #define __PM25__ 
-// #define __VOC__
+#define __VOC__
 
 //PINOUTS for LED strips
 const int CO2STRIP1_1PIN = 7, CO2STRIP1_2PIN = 6, CO2STRIP1_3PIN = 5, CO2STRIP2PIN = 4;//for CO2
@@ -36,7 +37,10 @@ const int button0pin = 14, button1pin = 15;
 //PINOUTS for dist sensor
 //SCL to 21 and SDA to 20
 
-const int CO2band1_1 = 25, CO2band1_2 = 25, CO2band1_3 = 25, CO2band2 = 55, PM25band1 = 55, PM25band2 = 55, VOCband1 = 50, VOCband2 = 50; //num of pixels per strip. Each pixel is 10cm.
+CHSV activeColor(140,255,255); //light blue
+CHSV idleColor(140,128,255); //half the saturation
+
+const int CO2band1_1 = 25, CO2band1_2 = 25, CO2band1_3 = 25, CO2band2 = 55, PM25band1 = 55, PM25band2 = 55, VOCband1 = 40, VOCband2 = 40; //num of pixels per strip. Each pixel is 10cm.
 
 const int CO2_1[17] = { 1609, 577, 406, 419, 443, 414, 403, 413, 409, 411, 412, 409, 423, 414, 421, 434, 421 };
 const int CO2_2[40] = { 1685, 642, 618, 698, 697, 778, 450, 664, 648, 676, 425, 504, 550, 481, 640, 942, 1791, 504, 733, 688, 592, 608, 850, 779, 1876, 646, 648, 659, 893, 422, 455, 701, 716, 892, 1046, 455, 483, 503, 448, 550 };
@@ -47,7 +51,6 @@ const int PM25_2[32] = { 65, 88, 44, 42, 73, 69, 70, 61, 54, 89, 86, 91, 60, 63,
 const int VOC_1[26] = { 8, 11, 5, 13, 16, 14, 15, 17, 15, 20, 29, 21, 22, 19, 14, 13, 19, 25, 17, 15, 13, 17, 16, 15, 20, 17 };
 const int VOC_2[22] = { 122, 67, 24, 36, 46, 32, 29, 34, 27, 25, 22, 23, 19, 23, 21, 33, 26, 34, 41, 15, 25, 18 };
 
-CHSV cblue(140,255,255);
 const int BAND_DELAY = 500;   //controls led animation speed
 
 //-------------------- Buttons and distance sensor --------------------//
@@ -66,8 +69,8 @@ bool isUserPresent = false;
 #define LED_TYPE WS2812
 #define COLOR_ORDER GRB
 
-CHSV strip1Color = cblue;
-CHSV strip2Color = cblue;
+CHSV strip1Color = idleColor;
+CHSV strip2Color = idleColor;
 
 #if defined(__CO2__)
 const int SCULPTURE_ID = 1;
